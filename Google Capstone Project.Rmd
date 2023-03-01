@@ -3,10 +3,6 @@ title: "Google Capstone Project [Case Study: How Does a Bike-Share Navigate Spee
 author: "Moureen Islam"
 date: 01.03.2023
 ---
-## Statement of the Problem
-
-
-
 ## Data Preparation
 
 **Install the required packages**
