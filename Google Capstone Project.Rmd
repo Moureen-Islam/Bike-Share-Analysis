@@ -1,0 +1,163 @@
+---
+title: "Google Capstone Project [Case Study: How Does a Bike-Share Navigate Speedy Success?]"
+author: "Moureen Islam"
+date: 01.03.2023
+---
+## Statement of the Problem
+
+
+
+## Data Preparation
+
+**Install the required packages**
+```{r}
+library(tidyverse)
+library(janitor)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(geosphere)
+```
+ **Import raw data**
+ 
+Here are the 12 months' raw data of the year 2022.
+
+```{r}
+jan_22 <- read.csv("E:\\Data Analytics\\Capstone Project\\202201-divvy-tripdata.csv") 
+                   
+feb_22 <- read.csv("E:\\Data Analytics\\Capstone Project\\202202-divvy-tripdata.csv") 
+mar_22 <- read.csv("E:\\Data Analytics\\Capstone Project\\202203-divvy-tripdata.csv") 
+apr_22 <- read.csv("E:\\Data Analytics\\Capstone Project\\202204-divvy-tripdata.csv") 
+may_22 <- read.csv("E:\\Data Analytics\\Capstone Project\\202205-divvy-tripdata.csv") 
+june_22 <- read.csv("E:\\Data Analytics\\Capstone Project\\202206-divvy-tripdata.csv") 
+july_22 <- read.csv("E:\\Data Analytics\\Capstone Project\\202207-divvy-tripdata.csv") 
+aug_22 <- read.csv("E:\\Data Analytics\\Capstone Project\\202208-divvy-tripdata.csv") 
+sep_22 <- read.csv("E:\\Data Analytics\\Capstone Project\\202209-divvy-publictripdata.csv") 
+oct_22 <- read.csv("E:\\Data Analytics\\Capstone Project\\202210-divvy-tripdata.csv") 
+nov_22 <- read.csv("E:\\Data Analytics\\Capstone Project\\202211-divvy-tripdata.csv") 
+dec_22 <- read.csv("E:\\Data Analytics\\Capstone Project\\202212-divvy-tripdata.csv")
+```
+
+In the following, all the data will be combined into one dataframe. 
+
+```{r}
+full_22 <- bind_rows(jan_22, feb_22, mar_22, apr_22, may_22, june_22, july_22, aug_22, sep_22, oct_22, nov_22, dec_22)
+colnames(full_22)
+```
+
+
+## Data Processing
+ Now, the columns that will not be required for analysis will be removed, and the type of the columns will be checked.
+
+```{r}
+full_22 <- full_22 %>%  
+  select(-c(ride_id, start_station_name, end_station_name, start_station_id, end_station_id))
+str(full_22)
+
+```
+
+**Edit Data**
+The day, month, year column will be created for each ride. This will help to aggregate the data for each month or day.
+
+```{r}
+full_22$start_date=as.Date(full_22$started_at)
+full_22$month=format(as.Date(full_22$start_date, label = TRUE), "%m")
+full_22$day=format(as.Date(full_22$start_date), "%d")
+full_22$year=format(as.Date(full_22$start_date), "%Y")
+full_22$day_name=format(as.Date(full_22$start_date),"%A")
+```
+
+To understand the durantion of the ride and the distance travelled, the following calculations will be required.
+
+```{r}
+#calculating ride length
+full_22$ride_length <- difftime(full_22$ended_at, full_22$started_at, units = "mins")
+```
+
+```{r}
+#calculate the distance of per ride
+full_22 <- full_22 %>%
+  mutate(ride_distance = distHaversine(cbind(start_lng, start_lat), cbind(end_lng, end_lat)))
+```
+
+```{r}
+#check the data again to review the new values
+
+str(full_22)
+```
+**The values of ride_length is in difftime format. To conduct mathematical calculations, the values need to be converted into numbers.**
+```{r}
+full_22$ride_length <- as.numeric(full_22$ride_length)
+```
+**The months are converted into names instead of number.**
+```{r}
+full_22<- full_22 %>%
+  mutate(month = month(started_at, label = TRUE))
+```
+
+**Remove the 0s from the new columns**
+
+```{r}
+full_22 <- full_22 %>%
+  filter(ride_length > 0) %>%
+  filter(ride_distance > 0)
+```
+
+##Descriptive Analysis
+
+```{r}
+##calculate analysis on ride_length and compare between member and casual riders
+
+aggregate(full_22$ride_length ~ full_22$member_casual, FUN = mean)
+aggregate(full_22$ride_length ~ full_22$member_casual, FUN = median)
+aggregate(full_22$ride_length ~ full_22$member_casual, FUN = max)
+aggregate(full_22$ride_length ~ full_22$member_casual, FUN = min)
+```
+```{r}
+#Compare the average ride time by each day for members and casual riders
+aggregate(full_22$ride_length ~ full_22$member_casual + full_22$day_name, FUN = mean)
+
+```
+
+
+## Visual Analysis
+
+**Compare number of rides, member vs casual in the week.**
+
+```{r}
+full_22 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>% 
+  group_by(member_casual, weekday) %>% 
+  summarise(number_of_rides = n(), average_duration = mean(ride_length)) %>% 
+  arrange(member_casual, weekday)  %>% 
+  ggplot(aes(x = weekday, y = number_of_rides, fill = member_casual)) +
+  geom_col(position = "dodge")
+
+```
+```{r}
+full_22 %>% 
+  group_by(member_casual, month) %>% 
+  summarise(number_of_rides = n(), average_duration = mean(ride_length)) %>% 
+  arrange(member_casual, month) %>%
+  gg
+  
+  
+```
+
+
+
+## Save the table to create a dashboard in tableau
+
+```{r}
+tripdata_22 <- full_22 %>%
+  group_by(member_casual, rideable_type, day_name, month) %>%
+  summarise(number_of_rides = n(), avg_ride_length = mean(ride_length), avg_distance = mean(ride_distance))
+
+```
+
+```{r}
+write_csv(tripdata_22, "C:\\Users\\MR9\\final-analysis.csv", append = FALSE)
+
+```
+
+
