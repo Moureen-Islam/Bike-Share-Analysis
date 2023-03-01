@@ -3,7 +3,17 @@ title: "Google Capstone Project [Case Study: How Does a Bike-Share Navigate Spee
 author: "Moureen Islam"
 date: 01.03.2023
 ---
+
+## Description of the Business Task
+
+This is the final capstone project of "Google Data Analytics Professional Certificate" course. The project is based on a fictional company, Cyclistic and their bike share project. The goal is to attract casual riders to become members. The following data analysis will attempt to answer the following questions-
+* How the casual riders and members ride differently?
+* Why would casual riders buy Cyclistic annual memberships?
+
 ## Data Preparation
+
+The data used are the historic trip data of the year 2022. The source is from:  "https://divvy-tripdata.s3.amazonaws.com/index.html". The data has been made available by Motivate International Inc. This is public data but it has prohibited to access riders' private information.
+R and RStudio will be used for data processing and analysis. Tableau will be used for visualization.
 
 **Install the required packages**
 ```{r}
@@ -155,5 +165,14 @@ tripdata_22 <- full_22 %>%
 write_csv(tripdata_22, "C:\\Users\\MR9\\final-analysis.csv", append = FALSE)
 
 ```
+## Key Findings
 
+The results show that Casual Riders are more frequent users of bike-share. Weekends are the most used time of the week and May-September are the peak months for bike use.Docked bikes are only used by the casual riders and electric bikes are the most preferable bikes between both type of users. It is also noticed that the average distance for members are almost at the same level for the whole year whereas casual riders used the bikes for long distant travels. So, it can be assumed that the members use cyclistic's bike share for their daily commute, and the casual riders use them for recreation or other sudden commute. 
+
+## Recommendations
+
+* Create marketing campaign to focus on the benefits of membership to engage the casual riders.
+* Provide discounts on membership for new members.
+* Start special campaigns for summer season as the months are the most popular among the bike riders to use the service.
+* Create more flexible payment plans such as: monthly payment or pay per use options for the members.
 
